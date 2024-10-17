@@ -37,7 +37,7 @@ function Notifications() {
         await axios.put(`${URL}/updateStatus/${_id}`, { status: "Denied" });
         window.alert("Order denied successfully!");
         fetchOrders().then((data) => {
-          const acceptedOrders = data.Orders.filter(order => order.status === "Accepted" || order.status === "Driver Accepted");
+          const acceptedOrders = data.Orders.filter(order => order.status === "Pending" );
           setOrders(acceptedOrders);
         });
       } catch (error) {
@@ -52,7 +52,7 @@ function Notifications() {
       await axios.put(`${URL}/updateStatus/${_id}`, { status: "Driver Accepted" });
       window.alert("Order accepted by driver successfully!");
       fetchOrders().then((data) => {
-        const acceptedOrders = data.Orders.filter(order => order.status === "Accepted" || order.status === "Driver Accepted");
+        const acceptedOrders = data.Orders.filter(order => order.status === "Pending" );
         setOrders(acceptedOrders);
       });
     } catch (error) {
@@ -62,7 +62,7 @@ function Notifications() {
 
   const componentRef = useRef(null);
   const handlePrint = useReactToPrint({
-    content: () => componentRef.current,
+    contentRef: componentRef,
     documentTitle: "Order Report",
     onAfterPrint: () => alert("Order Report Successfully Downloaded!"),
   });
@@ -90,22 +90,27 @@ function Notifications() {
             Add New Driver
           </button>
 
-          <tr>
-            <td>
-              <input
-                onChange={(e) => setSearchQuery(e.target.value)}
-                type="text"
-                name="search"
-                className="serch_inpt"
-                placeholder="Search Here..."
-              />
-            </td>
-            <td>
-              <button onClick={handleSearch} className="btn_dash_admin">
-                Search
-              </button>
-            </td>
-          </tr>
+          <table>
+            <tbody>
+              <tr>
+                <td>
+                  <input
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    type="text"
+                    name="search"
+                    className="serch_inpt"
+                    placeholder="Search Here..."
+                  />
+                </td>
+                <td>
+                  <button onClick={handleSearch} className="btn_dash_admin">
+                    Search
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          
           <button className="btn_dash_admin" onClick={handlePrint}>
             Generate Report
           </button>

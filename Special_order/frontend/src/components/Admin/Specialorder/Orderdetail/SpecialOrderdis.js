@@ -51,7 +51,7 @@ function SpecialOrderdis() {
 
   const componentRef = useRef(null);
   const handlePrint = useReactToPrint({
-    content: () => componentRef.current,
+    contentRef: componentRef,
     documentTitle: "Order Report",
     onAfterPrint: () => alert("Order Report Successfully Downloaded!"),
   });
