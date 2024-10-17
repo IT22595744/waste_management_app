@@ -60,7 +60,7 @@ function Addorder() {
     e.preventDefault();
     console.log(inputs);
     sendRequest().then(() => {
-      alert("Order details added successfully");
+      alert("Please proceed to payment");
       history('/specialpayment');
     });
   };

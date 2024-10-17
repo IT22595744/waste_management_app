@@ -78,17 +78,18 @@ const deleteOrder = async (req, res, next) => {
 
 // Update order status
 const updateStatus = async (req, res, next) => {
-    const { _id, status } = req.body;
-    let order;
+    const { id } = req.params;
+    const { status } = req.body;
     try {
-        order = await Order.findByIdAndUpdate(_id, { status }, { new: true });
+        const updatedOrder = await Order.findByIdAndUpdate(id, { status }, { new: true });
+        if (!updatedOrder) {
+            return res.status(404).json({ message: "Unable to update order status" });
+        }
+        return res.status(200).json({ updatedOrder });
     } catch (err) {
-        console.log(err);
+        console.error("Error updating order status:", err);
+        return res.status(500).json({ message: "Failed to update order status" });
     }
-    if (!order) {
-        return res.status(404).json({ message: "Unable to update order status" });
-    }
-    return res.status(200).json({ order });
 };
 
 // Exporting all functions

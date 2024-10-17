@@ -25,45 +25,19 @@ function SpecialOrderdis() {
 
   const history = useNavigate();
 
-  const deleteHandler = async (_id) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this order?"
-    );
-
-    if (confirmed) {
-      try {
-        await axios.put(`${URL}/updateStatus/${_id}`, { status: "Denied" });
-        window.alert("Order denied successfully!");
-        fetchOrders().then((data) => {
-          const pendingOrders = data.Orders.filter(order => order.status === "Pending");
-          setOrders(pendingOrders);
-        });
-      } catch (error) {
-        console.error("Error denying order:", error);
-      }
-    }
-  };
-
-  // Assign Driver Function
-  const assignDriverHandler = async (orderId) => {
+  const updateOrderStatus = async (_id, newStatus) => {
     try {
-      await axios.put(`${URL}/updateStatus/${orderId}`, { status: "Accepted" });
-      window.alert("Driver assigned successfully!");
+      await axios.put(`${URL}/updateStatus/${_id}`, { status: newStatus });
+      
+      window.alert(`Order ${newStatus.toLowerCase()} successfully!`);
       fetchOrders().then((data) => {
         const pendingOrders = data.Orders.filter(order => order.status === "Pending");
         setOrders(pendingOrders);
       });
     } catch (error) {
-      console.error("Error assigning driver:", error);
+      console.error(`Error updating order to ${newStatus}:`, error);
     }
   };
-
-  const componentRef = useRef(null);
-  const handlePrint = useReactToPrint({
-    content: () => componentRef.current,
-    documentTitle: "Order Report",
-    onAfterPrint: () => alert("Order Report Successfully Downloaded!"),
-  });
 
   const handleSearch = () => {
     fetchOrders().then((data) => {
@@ -74,6 +48,13 @@ function SpecialOrderdis() {
       setNoResults(filtered.length === 0);
     });
   };
+
+  const componentRef = useRef(null);
+  const handlePrint = useReactToPrint({
+    content: () => componentRef.current,
+    documentTitle: "Order Report",
+    onAfterPrint: () => alert("Order Report Successfully Downloaded!"),
+  });
 
   return (
     <div>
@@ -132,7 +113,7 @@ function SpecialOrderdis() {
               <div>
                 <br />
                 <h1 className="con_topic">
-                  No <span className="clo_us"> Found</span>{" "}
+                  No <span className="clo_us">Orders</span> Found
                 </h1>
               </div>
             ) : (
@@ -150,13 +131,13 @@ function SpecialOrderdis() {
                     <td className="admin_tbl_td">{item.totalamount}</td>
                     <td className="admin_tbl_td">
                       <button
-                        onClick={() => assignDriverHandler(item._id)}
+                        onClick={() => updateOrderStatus(item._id, "Accepted")}
                         className="btn_dash_admin"
                       >
                         Assign Driver
                       </button>
                       <button
-                        onClick={() => deleteHandler(item._id)}
+                        onClick={() => updateOrderStatus(item._id, "Denied")}
                         className="btn_dash_admin_dlt"
                       >
                         Deny

@@ -16,18 +16,20 @@ function Notifications() {
   const [searchQuery, setSearchQuery] = useState("");
   const [noResults, setNoResults] = useState(false);
 
+  // Fetch only accepted orders
   useEffect(() => {
     fetchOrders().then((data) => {
-      const pendingOrders = data.Orders.filter(order => order.status === "Pending");
-      setOrders(pendingOrders);
+      const acceptedOrders = data.Orders.filter(order => order.status === "Accepted" );
+      setOrders(acceptedOrders);
     });
   }, []);
 
   const history = useNavigate();
 
-  const deleteHandler = async (_id) => {
+  // Handler for "Deny" button
+  const denyOrderHandler = async (_id) => {
     const confirmed = window.confirm(
-      "Are you sure you want to delete this order?"
+      "Are you sure you want to deny this order?"
     );
 
     if (confirmed) {
@@ -35,8 +37,8 @@ function Notifications() {
         await axios.put(`${URL}/updateStatus/${_id}`, { status: "Denied" });
         window.alert("Order denied successfully!");
         fetchOrders().then((data) => {
-          const pendingOrders = data.Orders.filter(order => order.status === "Pending");
-          setOrders(pendingOrders);
+          const acceptedOrders = data.Orders.filter(order => order.status === "Accepted" || order.status === "Driver Accepted");
+          setOrders(acceptedOrders);
         });
       } catch (error) {
         console.error("Error denying order:", error);
@@ -44,19 +46,19 @@ function Notifications() {
     }
   };
 
-  // // Assign Driver Function
-  // const assignDriverHandler = async (orderId) => {
-  //   try {
-  //     await axios.put(`${URL}/updateStatus/${orderId}`, { status: "Accepted" });
-  //     window.alert("Driver assigned successfully!");
-  //     fetchOrders().then((data) => {
-  //       const pendingOrders = data.Orders.filter(order => order.status === "Pending");
-  //       setOrders(pendingOrders);
-  //     });
-  //   } catch (error) {
-  //     console.error("Error assigning driver:", error);
-  //   }
-  // };
+  // Handler for "Accepted" button
+  const acceptOrderHandler = async (_id) => {
+    try {
+      await axios.put(`${URL}/updateStatus/${_id}`, { status: "Driver Accepted" });
+      window.alert("Order accepted by driver successfully!");
+      fetchOrders().then((data) => {
+        const acceptedOrders = data.Orders.filter(order => order.status === "Accepted" || order.status === "Driver Accepted");
+        setOrders(acceptedOrders);
+      });
+    } catch (error) {
+      console.error("Error accepting order:", error);
+    }
+  };
 
   const componentRef = useRef(null);
   const handlePrint = useReactToPrint({
@@ -68,7 +70,8 @@ function Notifications() {
   const handleSearch = () => {
     fetchOrders().then((data) => {
       const filtered = data.Orders.filter((order) =>
-        order.contactname.toLowerCase().includes(searchQuery.toLowerCase())
+        order.contactname.toLowerCase().includes(searchQuery.toLowerCase()) &&
+        (order.status === "Accepted" || order.status === "Driver Accepted")
       );
       setOrders(filtered);
       setNoResults(filtered.length === 0);
@@ -111,7 +114,7 @@ function Notifications() {
         <div className="tbl_con_admin" ref={componentRef}>
           <h1 className="topic_inventory">
             Special Collection
-            <span className="sub_topic_inventory">  Driver Notifications</span>{" "}
+            <span className="sub_topic_inventory"> Driver Notifications</span>{" "}
           </h1>
           <table className="table_details_admin">
             <thead>
@@ -132,7 +135,7 @@ function Notifications() {
               <div>
                 <br />
                 <h1 className="con_topic">
-                  No <span className="clo_us"> Found</span>{" "}
+                  No <span className="clo_us">Orders Found</span>{" "}
                 </h1>
               </div>
             ) : (
@@ -150,13 +153,13 @@ function Notifications() {
                     <td className="admin_tbl_td">{item.totalamount}</td>
                     <td className="admin_tbl_td">
                       <button
-                        
+                        onClick={() => acceptOrderHandler(item._id)}
                         className="btn_dash_admin"
                       >
-                        Assign Driver
+                        Accept
                       </button>
                       <button
-                        onClick={() => deleteHandler(item._id)}
+                        onClick={() => denyOrderHandler(item._id)}
                         className="btn_dash_admin_dlt"
                       >
                         Deny
